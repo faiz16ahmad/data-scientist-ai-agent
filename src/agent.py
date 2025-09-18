@@ -17,9 +17,10 @@ from pydantic import BaseModel, Field
 class PythonREPLTool(BaseTool):
     """A tool for executing Python code in a REPL environment."""
     name: str = "python_repl"
-    description: str = "Execute Python code and return the result"
+    description: str = "Execute Python code and return the result. User has pre-selected relevant columns for analysis."
     df: Optional[pd.DataFrame] = Field(default=None)
     current_figure: Optional[object] = Field(default=None)
+    selected_columns: Optional[Dict] = Field(default=None)
 
     
     def _run(self, code: str) -> str:
@@ -81,6 +82,15 @@ def find_best_column_match(target, columns):
             'st': st
         }
         
+        # Inject selected columns context
+        if self.selected_columns:
+            exec_globals.update({
+                'numeric_columns': self.selected_columns.get('numeric', []),
+                'categorical_columns': self.selected_columns.get('categorical', []),
+                'datetime_columns': self.selected_columns.get('datetime', []),
+                'all_selected': self.selected_columns.get('all', [])
+            })
+        
         # Add persistent variables to globals BEFORE execution
         exec_globals.update(self._persistent_vars)
         
@@ -139,9 +149,10 @@ def find_best_column_match(target, columns):
 class DataScientistAgent:
     """Main agent for data analysis and visualization."""
     
-    def __init__(self, df: Optional[pd.DataFrame] = None):
-        """Initialize the agent with a DataFrame."""
+    def __init__(self, df: Optional[pd.DataFrame] = None, selected_columns: Optional[Dict] = None):
+        """Initialize the agent with a DataFrame and selected columns."""
         self.df = df
+        self.selected_columns = selected_columns or {}
         try:
             self.llm = ChatGoogleGenerativeAI(
             model="gemini-2.5-flash-lite",
@@ -153,7 +164,7 @@ class DataScientistAgent:
             raise ValueError("Google API credentials not found. Please set GOOGLE_API_KEY environment variable.")
         
         # Create tools
-        self.python_tool = PythonREPLTool(df=df)
+        self.python_tool = PythonREPLTool(df=df, selected_columns=selected_columns)
         self.tools = [self.python_tool]
         
         # Create the agent
@@ -269,10 +280,12 @@ Question: {input}
         prompt = PromptTemplate.from_template(template)
         return create_react_agent(self.llm, self.tools, prompt)
     
-    def update_dataframe(self, df: pd.DataFrame):
-        """Update the DataFrame for the agent."""
+    def update_dataframe(self, df: pd.DataFrame, selected_columns: Optional[Dict] = None):
+        """Update the DataFrame and selected columns for the agent."""
         self.df = df
+        self.selected_columns = selected_columns or {}
         self.python_tool.df = df
+        self.python_tool.selected_columns = selected_columns or {}
     
     async def process_query(self, query: str) -> dict:
         """Process a user query and return the result."""
@@ -327,11 +340,11 @@ Question: {input}
 # Create a global agent instance
 agent_instance = None
 
-def get_agent(df: Optional[pd.DataFrame] = None) -> DataScientistAgent:
+def get_agent(df: Optional[pd.DataFrame] = None, selected_columns: Optional[Dict] = None) -> DataScientistAgent:
     """Get or create the global agent instance."""
     global agent_instance
     if agent_instance is None:
-        agent_instance = DataScientistAgent(df)
+        agent_instance = DataScientistAgent(df, selected_columns)
     elif df is not None:
-        agent_instance.update_dataframe(df)
+        agent_instance.update_dataframe(df, selected_columns)
     return agent_instance
