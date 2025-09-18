@@ -7,8 +7,9 @@ An intelligent and collaborative Data Scientist AI Agent powered by Google Gemin
 ### 🧠 **Intelligent Analysis**
 - **Natural Language Processing**: Ask complex questions about your data in plain English
 - **5-Step Reasoning Process**: Grounding → Planning → Execution → Critique → Delivery
-- **Interactive Clarification**: Agent asks for clarification when queries are ambiguous
-- **Fuzzy Column Matching**: Intelligent column name resolution and suggestions
+- **Smart Intent Classification**: Automatic detection of visualization vs analysis requests
+- **Interactive Column Picker**: Click-to-add column names to reduce typos and confusion
+- **Smart Suggestions**: AI-generated questions based on your uploaded dataset
 
 ### 📊 **Advanced Visualizations**
 - **Interactive Plotly Charts**: Bar, line, scatter, histogram, box plots, and more
@@ -25,7 +26,8 @@ An intelligent and collaborative Data Scientist AI Agent powered by Google Gemin
 ### 🛡️ **Production-Ready Features**
 - **Secure Code Execution**: Sandboxed Python environment with persistent variables
 - **Rate Limiting**: Intelligent API usage management (8-12 requests/min)
-- **Error Handling**: Graceful degradation and comprehensive error recovery
+- **Robust Error Handling**: Graceful degradation with intelligent fallback systems
+- **Simplified Workflow**: Clean, fast, and maintainable architecture
 - **Comprehensive Testing**: 50-question automated test suite
 
 ### 🧪 **Testing & Quality Assurance**
@@ -115,7 +117,7 @@ An intelligent and collaborative Data Scientist AI Agent powered by Google Gemin
    - "Create a scatter plot with trend line"
    - "Predict next month's revenue using machine learning"
 
-3. **Interactive analysis**: The agent will clarify ambiguous requests and provide step-by-step analysis
+3. **Smart analysis**: The agent automatically classifies your intent and provides immediate analysis or clear feedback
 
 ### 📝 **Example Queries**
 
@@ -123,12 +125,14 @@ An intelligent and collaborative Data Scientist AI Agent powered by Google Gemin
 📊 Visualization:
 • "Create a histogram of customer ages"
 • "Show sales trends over time with a line chart"
+• "Plot Quantity over time using OrderDate"
 • "Make a correlation heatmap of all numeric columns"
 
 🔍 Analysis:
 • "What are the top 5 products by revenue?"
 • "Calculate the average order value by customer segment"
 • "Find outliers in the pricing data"
+• "Show basic statistics for UnitPrice"
 
 🤖 Machine Learning:
 • "Build a model to predict customer churn"
@@ -197,21 +201,44 @@ windsurf-project/
 
 1. **Streamlit Frontend** (`app.py`): Interactive web interface with file upload and chat
 2. **ReAct Agent** (`agent.py`): LangChain-powered agent with 5-step reasoning process
-3. **Query Analyzer** (`query_analyzer/`): Intent classification and clarification system
+3. **Query Analyzer** (`query_analyzer/`): Simplified intent classification system (VISUALIZATION, DATA_SUMMARY, UNCLEAR)
 4. **Testing Suite** (`testing/`): Automated evaluation with 50 diverse questions
 5. **Utilities** (`utils.py`): Data processing and Plotly visualization helpers
 
-### Agent Workflow
+### Simplified Workflow
 
 ```mermaid
 graph TD
-    A[User Query] --> B[Grounding & Verification]
-    B --> C[Query Analysis & Planning]
-    C --> D[Step-by-Step Execution]
-    D --> E[Self-Critique & Refinement]
-    E --> F[Final Answer Delivery]
+    A[User Query] --> B[Intent Classification]
+    B --> C{Intent Clear?}
+    C -->|Yes| D[Direct to DataScientistAgent]
+    C -->|No| E[Clear Feedback Message]
+    D --> F[5-Step Reasoning Process]
     F --> G[Interactive Visualization]
+    E --> H[User Rephrases Query]
+    H --> A
 ```
+
+## 🆕 Recent Improvements
+
+### ✨ **Simplified Workflow (Latest Update)**
+- **Streamlined Architecture**: Removed complex human-in-the-loop clarification system
+- **Faster Processing**: Direct intent classification with intelligent fallback
+- **Better UX**: Immediate feedback for unclear requests, no back-and-forth dialogue
+- **Robust Error Handling**: Keyword-based fallback when API calls fail
+- **Cleaner Codebase**: 185 lines removed, much more maintainable
+
+### 🎯 **Smart Features**
+- **Interactive Column Picker**: Click column names to add them to your query
+- **Smart Suggestions**: AI generates 5 relevant questions based on your dataset
+- **Intent Classification**: Automatic detection of visualization vs analysis requests
+- **Duplicate Chart Fix**: Resolved Streamlit element ID conflicts
+
+### 🚀 **Performance Benefits**
+- **Faster Response Times**: No clarification loops
+- **Better Reliability**: Robust fallback systems
+- **Improved Accuracy**: More generous intent classification
+- **Enhanced User Experience**: Clear, immediate feedback
 
 ## 🔧 Advanced Configuration
 
