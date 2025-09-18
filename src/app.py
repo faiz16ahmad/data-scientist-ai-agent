@@ -9,7 +9,7 @@ from pathlib import Path
 load_dotenv()
 
 # Import our modules
-from query_analyzer import analyze_query, process_clarification
+from query_analyzer import analyze_query
 from agent import get_agent
 from utils import DataProcessor
 
@@ -187,11 +187,9 @@ def main():
     if 'df' not in st.session_state:
         st.session_state.df = None
     if 'state' not in st.session_state:
-        st.session_state.state = 'IDLE'  # States: 'IDLE', 'AWAITING_CLARIFICATION', 'PROCESSING'
+        st.session_state.state = 'IDLE'  # States: 'IDLE', 'PROCESSING'
     if 'pending_query' not in st.session_state:
         st.session_state.pending_query = None
-    if 'analysis_result' not in st.session_state:
-        st.session_state.analysis_result = None
     if 'selected_features' not in st.session_state:
         st.session_state.selected_features = {}
     if 'chat_input' not in st.session_state:
@@ -207,28 +205,25 @@ def main():
         st.sidebar.info("Upload a CSV or Excel file to start analyzing your data with AI!")
     
     # Display chat messages
-    for message in st.session_state.messages:
+    for i, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
             if message.get("type") == "image":
                 st.image(message["content"], caption="Generated Visualization")
             elif message.get("type") == "plotly_chart" and message.get("figure"):
-                st.plotly_chart(message["figure"], use_container_width=True)
+                st.plotly_chart(message["figure"], use_container_width=True, key=f"plotly_chart_{i}")
             elif message.get("type") == "chart" and message.get("figure"):
                 st.pyplot(message["figure"])
             elif message.get("type") == "suggestions":
                 st.write(message["content"])
                 # Display clickable suggested questions
                 questions = message.get("questions", [])
-                for i, question in enumerate(questions):
-                    if st.button(f"💡 {question}", key=f"suggestion_{i}", help="Click to use this question"):
+                for j, question in enumerate(questions):
+                    if st.button(f"💡 {question}", key=f"suggestion_{i}_{j}", help="Click to use this question"):
                         st.session_state.chat_input = question
                         st.rerun()
             else:
                 st.write(message["content"])
     
-    # Handle different states
-    if st.session_state.state == 'AWAITING_CLARIFICATION':
-        show_clarification_ui()
     
     # File uploader
     if st.session_state.get('df') is None:
@@ -305,119 +300,47 @@ def main():
     if st.session_state.state == 'PROCESSING' and st.session_state.pending_query:
         asyncio.run(process_user_query())
 
-def show_clarification_ui():
-    """Show the clarification interface when a query is ambiguous."""
-    if st.session_state.analysis_result:
-        analysis = st.session_state.analysis_result
-        
-        st.info("🤔 I need some clarification to better help you.")
-        st.write(analysis.clarification_question)
-        
-        if analysis.suggested_options:
-            st.write("**Suggested options:**")
-            cols = st.columns(len(analysis.suggested_options))
-            
-            for i, option in enumerate(analysis.suggested_options):
-                with cols[i]:
-                    if st.button(option, key=f"option_{i}"):
-                        asyncio.run(handle_clarification(option))
-
-async def handle_clarification(clarification: str):
-    """Handle user's clarification response."""
-    try:
-        # Process the clarification
-        response = await process_clarification(
-            st.session_state.pending_query,
-            clarification
-        )
-        
-        # Create a synthesized query
-        synthesized_query = f"{st.session_state.pending_query} - {clarification}"
-        
-        # Process with the main agent
-        agent = get_agent(st.session_state.df)
-        result = await agent.process_query(synthesized_query)
-        
-        # Display results
-        if result["success"]:
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": result["response"]
-            })
-            
-            # Display chart if generated
-            if result["chart_path"] and os.path.exists(result["chart_path"]):
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": result["chart_path"],
-                    "type": "image"
-                })
-        else:
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": f"I encountered an error: {result['error']}"
-            })
-        
-        # Reset state
-        st.session_state.state = 'IDLE'
-        st.session_state.pending_query = None
-        st.session_state.analysis_result = None
-        st.rerun()
-        
-    except Exception as e:
-        st.error(f"Error processing clarification: {str(e)}")
-        st.session_state.state = 'IDLE'
 
 async def process_user_query():
-    """Process the user's query through the agent system."""
+    """Process the user's query through the simplified workflow."""
     query = st.session_state.pending_query
-    
-    # Add conversation context for confirmation responses
-    if len(st.session_state.messages) >= 2:
-        # Get last few messages for better context
-        recent_messages = st.session_state.messages[-4:]  # Last 4 messages for context
-        context_parts = []
-        
-        for msg in recent_messages:
-            if msg["role"] == "assistant":
-                context_parts.append(f"Assistant: {msg['content']}")
-            elif msg["role"] == "user":
-                context_parts.append(f"User: {msg['content']}")
-        
-        # If user gives short responses, add conversation context
-        short_responses = ["yes", "no", "ok", "sure", "proceed", "go ahead", "3d", "2d", "scatter", "line"]
-        if any(word.lower() == query.lower().strip() for word in short_responses) and context_parts:
-            context = "\n".join(context_parts)
-            query = f"Conversation context:\n{context}\n\nCurrent user response: {query}\n\nPlease continue based on the conversation context above."
     
     with st.spinner("Processing your request..."):
         try:
-            # Get agent with column context - no clarification needed!
-            agent = get_agent(
-                st.session_state.df, 
-                st.session_state.get('selected_features', {})
-            )
-            result = await agent.process_query(query)
+            # Step 1: Intent Classification
+            analysis = await analyze_query(query)
             
-            if result["success"]:
+            # Step 2: Decision Point
+            if analysis.intent == "unclear":
+                # Stop and give user a simple message
                 st.session_state.messages.append({
                     "role": "assistant",
-                    "content": result["response"]
+                    "content": "I'm sorry, I don't understand that request. Please try rephrasing, or use the column picker to help build your query."
                 })
+            else:
+                # Intent is clear - proceed to main agent
+                agent = get_agent(st.session_state.df)
+                result = await agent.process_query(query)
                 
-                # Display chart if generated
-                if result.get("chart_figure"):
+                if result["success"]:
                     st.session_state.messages.append({
                         "role": "assistant",
-                        "content": "Interactive visualization generated",
-                        "type": "plotly_chart",
-                        "figure": result["chart_figure"]
+                        "content": result["response"]
                     })
-            else:
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": f"I encountered an error: {result['error']}"
-                })
+                    
+                    # Display chart if generated
+                    if result.get("chart_figure"):
+                        st.session_state.messages.append({
+                            "role": "assistant",
+                            "content": "Interactive visualization generated",
+                            "type": "plotly_chart",
+                            "figure": result["chart_figure"]
+                        })
+                else:
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": f"I encountered an error: {result['error']}"
+                    })
         
         except Exception as e:
             st.session_state.messages.append({

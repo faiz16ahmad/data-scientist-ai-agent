@@ -1,20 +1,14 @@
-from typing import Dict, Any, Optional
-import json
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import JsonOutputParser
 
-from .prompts import (
-    INTENT_CLASSIFICATION_PROMPT,
-    QUERY_CLARIFICATION_PROMPT
-)
-from .schemas import QueryAnalysis, ClarificationResponse
+from .prompts import INTENT_CLASSIFICATION_PROMPT
+from .schemas import QueryAnalysis
 
 class QueryAnalyzer:
-    def __init__(self, model_name: str = "gemini-pro", temperature: float = 0.1):
-        """Initialize the query analyzer with a language model.
+    def __init__(self, temperature: float = 0.1):
+        """Initialize the simplified query analyzer.
         
         Args:
-            model_name: Name of the language model to use
             temperature: Temperature for the language model (0.0 to 1.0)
         """
         self.llm = ChatGoogleGenerativeAI(
@@ -22,18 +16,17 @@ class QueryAnalyzer:
             temperature=temperature
         )
         
-        # Initialize the chains
+        # Initialize the intent classification chain
         self.intent_chain = INTENT_CLASSIFICATION_PROMPT | self.llm | JsonOutputParser()
-        self.clarification_chain = QUERY_CLARIFICATION_PROMPT | self.llm | JsonOutputParser()
     
     async def analyze_query(self, query: str) -> QueryAnalysis:
-        """Analyze a user query to determine its intent and clarity.
+        """Analyze a user query to determine its intent.
         
         Args:
             query: The user's natural language query
             
         Returns:
-            QueryAnalysis object containing the analysis results
+            QueryAnalysis object containing the intent classification
         """
         try:
             # Run the intent classification chain
@@ -45,59 +38,29 @@ class QueryAnalyzer:
             return analysis
             
         except Exception as e:
-            # If there's an error, return a default analysis
-            return QueryAnalysis(
-                intent="unclear",
-                is_ambiguous=True,
-                required_parameters=[],
-                missing_parameters=[],
-                clarification_question="I'm having trouble understanding your request. Could you please rephrase it?",
-                suggested_options=[],
-                confidence=0.0
-            )
-    
-    async def process_clarification(
-        self, 
-        original_query: str, 
-        clarification: str
-    ) -> ClarificationResponse:
-        """Process a user's clarification to their original query.
-        
-        Args:
-            original_query: The user's original ambiguous query
-            clarification: The user's clarification response
-            
-        Returns:
-            ClarificationResponse with the clarified query and extracted parameters
-        """
-        try:
-            # Run the clarification chain
-            result = await self.clarification_chain.ainvoke({
-                "original_query": original_query,
-                "clarification": clarification
-            })
-            
-            # Convert the result to a ClarificationResponse object
-            response = ClarificationResponse(
-                original_query=original_query,
-                clarification=clarification,
-                parameters=result.get("parameters", {})
-            )
-            
-            return response
-            
-        except Exception as e:
-            # If there's an error, return a default response
-            return ClarificationResponse(
-                original_query=original_query,
-                clarification=clarification,
-                parameters={}
-            )
+            # For now, let's be more generous and assume it's a visualization if it contains plot/chart keywords
+            query_lower = query.lower()
+            if any(keyword in query_lower for keyword in ['plot', 'chart', 'graph', 'visualize', 'show', 'create', 'over time', 'by', 'vs']):
+                return QueryAnalysis(
+                    intent="visualization",
+                    confidence=0.7
+                )
+            elif any(keyword in query_lower for keyword in ['statistics', 'summary', 'analyze', 'count', 'mean', 'average', 'correlation']):
+                return QueryAnalysis(
+                    intent="data_summary",
+                    confidence=0.7
+                )
+            else:
+                # If there's an error, return unclear intent
+                return QueryAnalysis(
+                    intent="unclear",
+                    confidence=0.0
+                )
 
 # Create a singleton instance of the QueryAnalyzer
 analyzer = QueryAnalyzer()
 
-# Public API functions
+# Public API function
 async def analyze_query(query: str) -> QueryAnalysis:
     """Public function to analyze a query.
     
@@ -105,18 +68,6 @@ async def analyze_query(query: str) -> QueryAnalysis:
         query: The user's natural language query
         
     Returns:
-        QueryAnalysis object with the analysis results
+        QueryAnalysis object with the intent classification
     """
     return await analyzer.analyze_query(query)
-
-async def process_clarification(original_query: str, clarification: str) -> ClarificationResponse:
-    """Public function to process a clarification.
-    
-    Args:
-        original_query: The original ambiguous query
-        clarification: The user's clarification response
-        
-    Returns:
-        ClarificationResponse with the clarified query and parameters
-    """
-    return await analyzer.process_clarification(original_query, clarification)
