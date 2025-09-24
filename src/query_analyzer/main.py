@@ -57,8 +57,15 @@ class QueryAnalyzer:
                     confidence=0.0
                 )
 
-# Create a singleton instance of the QueryAnalyzer
-analyzer = QueryAnalyzer()
+# Create a singleton instance of the QueryAnalyzer (lazy initialization)
+analyzer = None
+
+def get_analyzer():
+    """Get or create the analyzer instance."""
+    global analyzer
+    if analyzer is None:
+        analyzer = QueryAnalyzer()
+    return analyzer
 
 # Public API function
 async def analyze_query(query: str) -> QueryAnalysis:
@@ -70,4 +77,4 @@ async def analyze_query(query: str) -> QueryAnalysis:
     Returns:
         QueryAnalysis object with the intent classification
     """
-    return await analyzer.analyze_query(query)
+    return await get_analyzer().analyze_query(query)

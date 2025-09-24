@@ -1,343 +1,151 @@
-# 🤖 Data Scientist AI Agent
+# Data Scientist AI Agent
 
-An intelligent and collaborative Data Scientist AI Agent powered by Google Gemini that transforms natural language queries into comprehensive data analysis and interactive visualizations.
-
-## ✨ Key Features
-
-### 🧠 **Intelligent Analysis**
-- **Natural Language Processing**: Ask complex questions about your data in plain English
-- **5-Step Reasoning Process**: Grounding → Planning → Execution → Critique → Delivery
-- **Smart Intent Classification**: Automatic detection of visualization vs analysis requests
-- **Interactive Column Picker**: Click-to-add column names to reduce typos and confusion
-- **Smart Suggestions**: AI-generated questions based on your uploaded dataset
-
-### 📊 **Advanced Visualizations**
-- **Interactive Plotly Charts**: Bar, line, scatter, histogram, box plots, and more
-- **Complex Visualizations**: Sunburst, treemaps, 3D plots, correlation matrices
-- **Real-time Rendering**: Seamless integration with Streamlit interface
-- **Export Capabilities**: Save charts and analysis results
-
-### 🔬 **Machine Learning & Statistics**
-- **Advanced Analytics**: Statistical summaries, correlations, trend analysis
-- **ML Models**: XGBoost, clustering, predictions, feature importance
-- **Model Explainability**: SHAP values, LIME explanations
-- **Time Series Analysis**: Forecasting with Prophet and ARIMA
-
-### 🛡️ **Production-Ready Features**
-- **Secure Code Execution**: Sandboxed Python environment with persistent variables
-- **Rate Limiting**: Intelligent API usage management (8-12 requests/min)
-- **Robust Error Handling**: Graceful degradation with intelligent fallback systems
-- **Simplified Workflow**: Clean, fast, and maintainable architecture
-- **Comprehensive Testing**: 50-question automated test suite
-
-### 🧪 **Testing & Quality Assurance**
-- **Automated Test Suite**: 50 carefully crafted questions across 5 categories
-- **Performance Metrics**: 4-criteria evaluation system with 75% pass threshold
-- **Real-time Monitoring**: Streamlit dashboard for test execution and results
-- **Category Analysis**: Data understanding, visualization, statistical analysis
-
-## 🔧 Prerequisites
-
-- **Python 3.9+**
-- **Google Gemini API key** ([Get yours here](https://makersuite.google.com/app/apikey))
-- **(Optional)** LangSmith API key for observability and debugging
+A conversational AI agent for data analysis built with Streamlit, FastAPI, and LangChain. This application allows users to upload CSV/Excel files and interact with an AI agent that can analyze data, generate insights, and create visualizations.
 
 ## 🚀 Quick Start
 
 ### Method 1: Automated Setup (Recommended)
 
-1. **Clone and setup**:
+1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
+   git clone <repository-url>
    cd windsurf-project
-   python setup.py
    ```
 
-2. **Configure API key**:
+2. **Run the setup script**
    ```bash
-   cp .env.example .env
-   # Edit .env and add your Google Gemini API key
+   python start_backend.py
    ```
+   This will automatically:
+   - Install all dependencies
+   - Start the FastAPI backend
+   - Launch the Streamlit frontend
 
-3. **Launch the application**:
-   ```bash
-   # Windows:
-   run_venv.bat
-   
-   # Unix/Linux/macOS:
-   ./run_venv.sh
-   ```
+3. **Access the application**
+   - Streamlit UI: http://localhost:8501
+   - FastAPI Backend: http://localhost:8000
 
 ### Method 2: Manual Setup
 
-1. **Create virtual environment**:
-   ```bash
-   python -m venv venv
-   
-   # Activate environment
-   # Windows:
-   venv\Scripts\activate
-   # Unix/Linux/macOS:
-   source venv/bin/activate
-   ```
-
-2. **Install dependencies**:
+1. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Set up environment variables**:
+2. **Set up Google API key**
+   - Follow instructions in `SETUP_GUIDE.md`
+   - Add your Google API key to the environment
+
+3. **Start the backend**
    ```bash
-   # Create .env file
-   echo "GOOGLE_API_KEY=your_api_key_here" > .env
+   uvicorn api:app --reload --host 127.0.0.1 --port 8000
    ```
 
-4. **Run the application**:
+4. **Start the frontend**
    ```bash
    streamlit run src/app.py
    ```
 
-### 🔑 API Key Setup
+## 📊 Key Features
 
-1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Click "Create API Key" 
-3. Copy your API key
-4. Add to `.env` file: `GOOGLE_API_KEY=your_key_here`
+- **Interactive Data Analysis**: Upload CSV/Excel files and ask questions about your data
+- **AI-Powered Insights**: Uses Google Gemini for intelligent data analysis
+- **Automated Visualizations**: Generates charts and graphs based on your queries
+- **Session Management**: Maintains conversation context across queries
+- **Comprehensive Testing**: 50-question automated test suite for reliability
 
-> **Security Note**: Never commit your `.env` file to version control
-
-## 💻 Usage
-
-### 🌐 **Web Interface**
-
-1. **Upload your data**: Support for CSV and Excel files
-2. **Ask questions**: Use natural language queries like:
-   - "Show me a bar chart of sales by region"
-   - "What's the correlation between price and sales?"
-   - "Create a scatter plot with trend line"
-   - "Predict next month's revenue using machine learning"
-
-3. **Smart analysis**: The agent automatically classifies your intent and provides immediate analysis or clear feedback
-
-### 📝 **Example Queries**
-
-```
-📊 Visualization:
-• "Create a histogram of customer ages"
-• "Show sales trends over time with a line chart"
-• "Plot Quantity over time using OrderDate"
-• "Make a correlation heatmap of all numeric columns"
-
-🔍 Analysis:
-• "What are the top 5 products by revenue?"
-• "Calculate the average order value by customer segment"
-• "Find outliers in the pricing data"
-• "Show basic statistics for UnitPrice"
-
-🤖 Machine Learning:
-• "Build a model to predict customer churn"
-• "Cluster customers based on their behavior"
-• "Show feature importance for sales prediction"
-```
-
-### 🧪 **Testing Your Agent**
-
-Run the comprehensive test suite to evaluate performance:
-
-```bash
-# Quick test (10 questions)
-python run_tests.py
-
-# Full test suite (50 questions)
-# Select option 2 when prompted
-
-# Interactive testing dashboard
-streamlit run src/testing/test_app.py
-```
-
-**Test Categories:**
-- Data Understanding (10 questions)
-- Basic Visualization (10 questions) 
-- Advanced Analysis (10 questions)
-- Complex Visualization (10 questions)
-- Statistical Analysis (10 questions)
-
-The application opens at `http://localhost:8501`
-
-## 📁 Project Structure
+## 🏗️ Project Structure
 
 ```
 windsurf-project/
-├── src/
-│   ├── app.py                    # 🌐 Main Streamlit application
-│   ├── agent.py                  # 🤖 ReAct agent with 5-step reasoning
-│   ├── utils.py                  # 🛠️ Data processing & visualization utilities
-│   ├── query_analyzer/           # 🧠 Query analysis & clarification system
-│   │   ├── __init__.py
-│   │   ├── main.py              # Query analysis logic
-│   │   ├── prompts.py           # LLM prompt templates
-│   │   └── schemas.py           # Pydantic data models
-│   └── testing/                  # 🧪 Comprehensive test suite
-│       ├── __init__.py
-│       ├── test_questions.py    # 50 test questions bank
-│       ├── test_runner.py       # Automated test execution
-│       ├── results_analyzer.py  # Results analysis & visualization
-│       └── test_app.py         # Streamlit testing dashboard
-├── docs/                        # 📚 Documentation files
-│   ├── SETUP_GUIDE.md          # Detailed setup instructions
-│   ├── TESTING_README.md       # Testing framework guide
-│   └── RATE_LIMITING_GUIDE.md  # API usage management
-├── run_tests.py                 # 🚀 Quick test runner
-├── setup.py                     # 🔧 Automated setup script
-├── .env.example                 # 🔐 Environment variables template
-├── .gitignore
-├── README.md
-└── requirements.txt             # 📦 Python dependencies
+├── src/                    # Python Backend
+│   ├── app.py             # Streamlit frontend
+│   ├── agent.py           # LangChain AI agent
+│   ├── utils.py           # Utility functions
+│   └── query_analyzer/    # Query analysis logic
+├── api.py                 # FastAPI backend server
+├── requirements.txt       # Python dependencies
+├── start_backend.py       # Automated setup script
+├── run_tests.py           # Test runner
+├── sample_sales.csv      # Sample dataset
+└── README.md             # This file
 ```
 
-## 🏗️ Architecture
+## 🧪 Testing
 
-### Core Components
-
-1. **Streamlit Frontend** (`app.py`): Interactive web interface with file upload and chat
-2. **ReAct Agent** (`agent.py`): LangChain-powered agent with 5-step reasoning process
-3. **Query Analyzer** (`query_analyzer/`): Simplified intent classification system (VISUALIZATION, DATA_SUMMARY, UNCLEAR)
-4. **Testing Suite** (`testing/`): Automated evaluation with 50 diverse questions
-5. **Utilities** (`utils.py`): Data processing and Plotly visualization helpers
-
-### Simplified Workflow
-
-```mermaid
-graph TD
-    A[User Query] --> B[Intent Classification]
-    B --> C{Intent Clear?}
-    C -->|Yes| D[Direct to DataScientistAgent]
-    C -->|No| E[Clear Feedback Message]
-    D --> F[5-Step Reasoning Process]
-    F --> G[Interactive Visualization]
-    E --> H[User Rephrases Query]
-    H --> A
+Run the comprehensive test suite:
+```bash
+python run_tests.py
 ```
 
-## 🆕 Recent Improvements
+This will test 50 different scenarios including:
+- Data upload and processing
+- Statistical analysis
+- Visualization generation
+- Error handling
 
-### ✨ **Simplified Workflow (Latest Update)**
-- **Streamlined Architecture**: Removed complex human-in-the-loop clarification system
-- **Faster Processing**: Direct intent classification with intelligent fallback
-- **Better UX**: Immediate feedback for unclear requests, no back-and-forth dialogue
-- **Robust Error Handling**: Keyword-based fallback when API calls fail
-- **Cleaner Codebase**: 185 lines removed, much more maintainable
+## 📈 Sample Data
 
-### 🎯 **Smart Features**
-- **Interactive Column Picker**: Click column names to add them to your query
-- **Smart Suggestions**: AI generates 5 relevant questions based on your dataset
-- **Intent Classification**: Automatic detection of visualization vs analysis requests
-- **Duplicate Chart Fix**: Resolved Streamlit element ID conflicts
+The project includes sample datasets:
+- `sample_sales.csv`: E-commerce sales data
+- `advanced_customer_behavior.csv`: Customer behavior analytics
 
-### 🚀 **Performance Benefits**
-- **Faster Response Times**: No clarification loops
-- **Better Reliability**: Robust fallback systems
-- **Improved Accuracy**: More generous intent classification
-- **Enhanced User Experience**: Clear, immediate feedback
-
-## 🔧 Advanced Configuration
-
-### Rate Limiting
-```python
-# Adjust API rate limits (default: 8 requests/min)
-runner = TestRunner(df, rate_limit_requests=10)
-```
-
-### Custom Agent Settings
-```python
-# Modify agent behavior in agent.py
-agent = DataScientistAgent(df)
-agent.llm.temperature = 0.2  # Adjust creativity
-```
+## 🔧 Configuration
 
 ### Environment Variables
+- `GOOGLE_API_KEY`: Your Google Gemini API key (required)
+
+### API Endpoints
+- `POST /upload/`: Upload CSV/Excel files
+- `POST /process_query/`: Process data analysis queries
+- `GET /health`: Health check endpoint
+
+## 🚀 Deployment
+
+### Local Development
 ```bash
-# .env file configuration
-GOOGLE_API_KEY=your_api_key_here
-LANGCHAIN_API_KEY=your_langsmith_key  # Optional
-LANGCHAIN_TRACING_V2=true            # Optional
-DEBUG=True                           # Enable debug mode
+# Terminal 1: Backend
+uvicorn api:app --reload --host 127.0.0.1 --port 8000
+
+# Terminal 2: Frontend
+streamlit run src/app.py
 ```
 
-## 🚨 Troubleshooting
-
-### Common Issues
-
-**API Key Errors:**
+### Production
 ```bash
-# Verify API key is set
-python -c "import os; from dotenv import load_dotenv; load_dotenv(); print('✅ API Key found!' if os.getenv('GOOGLE_API_KEY') else '❌ API Key missing!')"
+# Start backend
+uvicorn api:app --host 0.0.0.0 --port 8000
+
+# Start frontend
+streamlit run src/app.py --server.port 8501
 ```
 
-**Rate Limiting:**
-- Reduce concurrent requests in test runner
-- Use conservative rate limits (5-8 requests/min)
-- Check for other API usage
+## 📚 Documentation
 
-**Memory Issues:**
-```python
-# Sample large datasets
-df_sample = df.sample(n=1000)
-```
-
-**Import Errors:**
-```bash
-# Reinstall dependencies
-pip install -r requirements.txt --force-reinstall
-```
-
-## 📊 Performance Benchmarks
-
-| Test Category | Target Pass Rate | Avg Execution Time |
-|---------------|------------------|-------------------|
-| Data Understanding | >90% | <5s |
-| Basic Visualization | >85% | <8s |
-| Advanced Analysis | >75% | <12s |
-| Complex Visualization | >70% | <15s |
-| Statistical Analysis | >65% | <20s |
+- `SETUP_GUIDE.md`: Detailed setup instructions
+- `TESTING_README.md`: Testing documentation
+- `requirements.txt`: Python dependencies
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Run tests (`python run_tests.py`)
-4. Commit changes (`git commit -m 'Add amazing feature'`)
-5. Push to branch (`git push origin feature/amazing-feature`)
-6. Open a Pull Request
-
-### Development Setup
-```bash
-# Install development dependencies
-pip install -r requirements.txt
-pip install pytest black flake8
-
-# Run code formatting
-black src/
-flake8 src/
-```
+2. Create a feature branch
+3. Make your changes
+4. Run the test suite
+5. Submit a pull request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
-## 🙏 Acknowledgments
+## 🆘 Support
 
-- **AI/ML Stack**: [LangChain](https://python.langchain.com/) + [Google Gemini](https://ai.google.dev/)
-- **Frontend**: [Streamlit](https://streamlit.io/) for rapid prototyping
-- **Visualization**: [Plotly](https://plotly.com/) for interactive charts
-- **Data Science**: [Pandas](https://pandas.pydata.org/), [Scikit-learn](https://scikit-learn.org/), [XGBoost](https://xgboost.readthedocs.io/)
-
-## 🔗 Related Documentation
-
-- [📚 Setup Guide](docs/SETUP_GUIDE.md) - Detailed installation instructions
-- [🧪 Testing Guide](docs/TESTING_README.md) - Comprehensive testing framework
-- [🚦 Rate Limiting](docs/RATE_LIMITING_GUIDE.md) - API usage management
+If you encounter any issues:
+1. Check the `SETUP_GUIDE.md` for setup instructions
+2. Run the test suite to verify functionality
+3. Check the console logs for error messages
+4. Ensure your Google API key is properly configured
 
 ---
 
-**Ready to transform your data analysis workflow with AI?** 🚀📊🤖
+**Ready to analyze your data?** Upload a CSV file and start asking questions! 🚀📊
