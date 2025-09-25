@@ -12,7 +12,7 @@ import re
 # Load environment variables
 load_dotenv()
 
-API_URL = "http://127.0.0.1:8000"  # URL of your FastAPI backend
+API_URL = "https://data-scientist-ai-agent.onrender.com/"  # URL of your FastAPI backend
 
 # Set page config
 st.set_page_config(

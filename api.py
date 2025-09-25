@@ -22,9 +22,21 @@ from src.query_analyzer import analyze_query
 app = FastAPI(title="Data Scientist AI Agent API", version="1.0.0")
 
 # Add CORS middleware to allow requests from Streamlit
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],  # In production, specify your Streamlit app's URL
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your Streamlit app's URL
+    allow_origins=[
+        "https://data-scientist-ai-agent-bsajep4lriml6yh35abjra.streamlit.app",  # Add your Streamlit URL here
+        # You can also keep your local URL for testing
+        "http://localhost",
+        "http://localhost:8501",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
